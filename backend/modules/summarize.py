@@ -1,5 +1,5 @@
 import requests
-from config import GROQ_KEY,GROQ_API_URL
+from modules.config import GROQ_KEY,GROQ_API_URL
 
 HEADERS = {
     "Authorization": f"Bearer {GROQ_KEY}",
