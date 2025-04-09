@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge"
 import { FileUploader } from "@/components/file-uploader"
 import { ChatMessage } from "@/components/chat-message"
-import { Paperclip, Send, Mic, X, Scale, Globe } from "lucide-react"
+import { Paperclip, Send, X, Scale, Globe } from "lucide-react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import axios from 'axios'
@@ -47,6 +47,7 @@ export default function AppPage() {
       const index = Number.parseInt(moduleParam) - 1
       if (index >= 0 && index < modules.length) {
         setActiveModule(modules[index])
+        setMessages(INITIAL_MESSAGES); // Reset messages to initial state
       }
     }
   }, [moduleParam])
@@ -281,17 +282,6 @@ export default function AppPage() {
                           <p className="text-xs text-gray-500">Drag and drop to upload</p>
                           <FileUploader onUpload={handleFileUpload} />
                         </div>
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium">Attach URL</h3>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              placeholder="Enter a publicly accessible URL"
-                              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                            />
-                            <Button>Attach</Button>
-                          </div>
-                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -311,9 +301,6 @@ export default function AppPage() {
                 />
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className="shrink-0">
-                    <Mic className="h-4 w-4" />
-                  </Button>
                   <Button size="icon" className="shrink-0" onClick={handleSendMessage}>
                     <Send className="h-4 w-4" />
                   </Button>
