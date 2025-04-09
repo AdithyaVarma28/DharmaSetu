@@ -1,11 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-<<<<<<< Updated upstream
 from modules.config import KANOON_AUTH_TOKEN
-=======
-from config import KANOON_AUTH_TOKEN
->>>>>>> Stashed changes
 
 HEADERS={'authorization': f"Token {KANOON_AUTH_TOKEN}"}
 
@@ -28,10 +24,7 @@ def get_most_relevant_doc_id(searchquery):
         most_relevant_doc=docs[0]
         title=most_relevant_doc.get('title','Unknown Title')
         tid=most_relevant_doc.get('tid')
-<<<<<<< Updated upstream
-=======
         print(f"Most Relevant Document: {title} (ID: {tid})")
->>>>>>> Stashed changes
         return tid
 
     except requests.exceptions.RequestException as err:
@@ -60,9 +53,6 @@ def get_cleaned_document_by_id(doc_id):
 
     except requests.exceptions.RequestException as err:
         print("Error fetching document:",err)
-<<<<<<< Updated upstream
-        return None
-=======
         return None
 
 if __name__=="__main__":
@@ -74,8 +64,7 @@ if __name__=="__main__":
         if content:
             print("\n Most Relevant Document Content (preview):\n")
             print(content[:3000]) 
-        else:
+        if not content:
             print("Could not extract document content.")
     else:
         print("No relevant document found.")
->>>>>>> Stashed changes
