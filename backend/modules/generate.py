@@ -64,7 +64,7 @@ if __name__=="__main__":
         if content:
             print("\n Most Relevant Document Content (preview):\n")
             print(content[:3000]) 
-        if not content:
+        else:
             print("Could not extract document content.")
     else:
         print("No relevant document found.")

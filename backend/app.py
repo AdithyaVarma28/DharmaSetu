@@ -23,5 +23,5 @@ def run_legal_chatbot():
 
         print("Answer: ",summarize_legal_text(content))
 
-if __name__ =="__main__":
+if __name__=="__main__":
     run_legal_chatbot()
