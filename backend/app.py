@@ -15,18 +15,18 @@ def run_legal_chatbot(query):
         content = get_cleaned_document_by_id(doc_id)
         if not content:
             # if content is empty
-            return "No relevant content found in the document."
+            content=""
     else:
         # if you don't get doc_id
-        return "No relevant document found for the query."
+        content=""
 
-    answer = summarize_legal_text(content)
+    answer = summarize_legal_text(query,content)
 
     if answer:
         return answer
     else:
         # if you don't get answer
-        return "Unable to generate a summary for the document."
+        return "Sorry, I couldn't find an answer to your question."
 
 @app.route('/api/correct_query', methods=['POST'])
 def api_correct_query():
