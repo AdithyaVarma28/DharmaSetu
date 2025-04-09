@@ -95,9 +95,21 @@ export default function AppPage() {
         console.error('Unexpected response format:', response);
         setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'Unexpected response from the server.' }]);
       }
-    } catch (error) {
+    } catch (err) {
+      const error = err as any; // Explicitly cast to 'any' for safe access
       console.error('Error communicating with the backend:', error);
-      setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'Error processing your request. Please try again later.' }]);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+        setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: `Error: ${error.response.data?.message || 'Internal Server Error'}` }]);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+        setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'No response from the server. Please check your connection.' }]);
+      } else {
+        console.error('Error setting up the request:', error.message);
+        setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'Error setting up the request. Please try again later.' }]);
+      }
     } finally {
       setIsProcessing(false);
     }
