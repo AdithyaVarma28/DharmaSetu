@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-from config import KANOON_AUTH_TOKEN
+from modules.config import KANOON_AUTH_TOKEN
 
 HEADERS={'authorization': f"Token {KANOON_AUTH_TOKEN}"}
 
@@ -24,7 +24,6 @@ def get_most_relevant_doc_id(searchquery):
         most_relevant_doc=docs[0]
         title=most_relevant_doc.get('title','Unknown Title')
         tid=most_relevant_doc.get('tid')
-        print(f"Most Relevant Document: {title} (ID: {tid})")
         return tid
 
     except requests.exceptions.RequestException as err:
@@ -54,17 +53,3 @@ def get_cleaned_document_by_id(doc_id):
     except requests.exceptions.RequestException as err:
         print("Error fetching document:",err)
         return None
-
-if __name__=="__main__":
-    search_query="Article 360 of the Constitution of India"
-    doc_id=get_most_relevant_doc_id(search_query)
-
-    if doc_id:
-        content=get_cleaned_document_by_id(doc_id)
-        if content:
-            print("\n Most Relevant Document Content (preview):\n")
-            print(content[:3000]) 
-        else:
-            print("Could not extract document content.")
-    else:
-        print("No relevant document found.")

@@ -1,5 +1,5 @@
 import requests
-from config import API_KEY,API_URL
+from modules.config import API_KEY,API_URL
 
 headers={
     "Authorization":f"Bearer {API_KEY}",
@@ -10,7 +10,7 @@ def correct_legal_text(user_input):
     prompt=f"""
             You are a legal assistant. The user may provide a noisy or misspelled legal query.
             Your job is to:
-            1. Correct grammar and spelling.
+            1. Correct grammar, spelling and spacing.
             2. Expand abbreviated legal references 
             3. Return only the corrected and expanded legal **title**, such as "Section 138 of the Negotiable Instruments Act, 1881".
             Do not include any explanation, background, or comments—return **only** the title.
@@ -41,13 +41,4 @@ def correct_legal_text(user_input):
 
     except requests.exceptions.RequestException as e:
         print(f"API Error: {e}")
-        if response is not None:
-            print(response.text)
         return None
-
-if __name__=="__main__":
-    query="section 138"
-    clean_query=correct_legal_text(query)
-    if clean_query:
-        print("Corrected Legal Query:")
-        print(clean_query)
