@@ -13,9 +13,9 @@ import { Bell, HelpCircle, Scale, Settings } from "lucide-react"
 
 export function AppHeader() {
   return (
-    <header className="border-b">
+    <header className="fixed top-0 left-0 right-0 z-30 border-b bg-background">
       <div className="flex h-16 items-center px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/" className="flex items-center gap-2 font-semibold ml-[70px]">
           <Scale className="h-6 w-6 text-primary" />
           <span>DharmaSetu</span>
         </Link>

@@ -10,6 +10,19 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+  
+  .chat-height {
+    height: calc(100vh - 180px);
+  }
 }
 
 @layer base {

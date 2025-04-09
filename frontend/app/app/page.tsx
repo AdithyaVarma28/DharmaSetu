@@ -144,7 +144,7 @@ export default function AppPage() {
     <div className="flex min-h-screen">
       <AppSidebar activeModule={activeModule} />
       <div className="flex-1 flex flex-col">
-        <header className="border-b py-3 px-6 flex items-center justify-between">
+        <header className="sticky top-0 z-20 border-b py-3 px-6 flex items-center justify-between bg-background">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Scale className="h-5 w-5 text-primary" />
