@@ -6,17 +6,13 @@ def run_legal_chatbot():
     while True:
         query=input("Enter your legal query (or 'exit' to quit): ")
         clean_query=correct_legal_text(query)
-        if clean_query:
-            print(clean_query)
         if query.lower()=='exit':
             break
 
         doc_id=get_most_relevant_doc_id(clean_query)
         if doc_id:
             content=get_cleaned_document_by_id(doc_id)
-            if content:
-                print(content[:3000]) 
-            else:
+            if not content:
                 print("Could not extract document content.")
         else:
             print("No relevant document found.")
