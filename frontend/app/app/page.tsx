@@ -60,6 +60,8 @@ export default function AppPage() {
   const handleSendMessage = async () => {
     if (input.trim() === '' && attachments.length === 0) return;
 
+    console.log('User Input:', input); // Log user input to the console
+
     const userMessage = {
       id: messages.length + 1,
       role: 'user',
