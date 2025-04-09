@@ -17,6 +17,8 @@ import {
   User,
   Home,
   Scale,
+  Clock,
+  TrendingUp,
 } from "lucide-react"
 import { MainNav } from "@/components/main-nav"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
@@ -32,7 +34,7 @@ const MOCK_PETITIONS = [
       "We demand increased frequency of buses and new routes to connect the eastern suburbs to the city center.",
     category: "Transportation",
     target: 5000,
-    signatures: 3245,
+    signatures: 2245,
     deadline: "15 days left",
     createdBy: "Citizens for Better Transport",
     createdAt: "2 weeks ago",
@@ -95,7 +97,7 @@ const MOCK_PETITIONS = [
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [sortOption, setSortOption] = useState("trending")
+  const [sortOption, setSortOption] = useState("home") // Updated to include "home", "recent", and "trending"
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [createType, setCreateType] = useState<"issue" | "petition">("petition")
   const [petitions, setPetitions] = useState(MOCK_PETITIONS)
@@ -152,10 +154,21 @@ export default function CommunityPage() {
     setDeadline("30")
   }
 
-  // Ensure the filter dynamically updates the displayed petitions
-  const filteredPetitions = petitions.filter((petition) =>
-    selectedCategory === "" || petition.category === selectedCategory
-  );
+  // Filter petitions based on the selected tab
+  const filteredPetitions = petitions.filter((petition) => {
+    if (sortOption === "recent") {
+      return petition.createdAt === "1 week ago"; // Match petitions with "1 week ago" in mock data
+    }
+    if (sortOption === "trending") {
+      return petition.signatures / petition.target >= 0.5; // Example: Trending if 50% or more signatures achieved
+    }
+    return selectedCategory === "" || petition.category === selectedCategory;
+  }).sort((a, b) => {
+    if (sortOption === "trending") {
+      return (b.signatures / b.target) - (a.signatures / a.target); // Sort by percentage of signatures achieved
+    }
+    return 0;
+  }).slice(0, sortOption === "trending" ? 3 : undefined); // Limit to top 3 for trending
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -187,13 +200,33 @@ export default function CommunityPage() {
             <div className="p-6 space-y-4">
               <h3 className="text-lg font-semibold">Community Hub</h3>
               <nav className="space-y-2">
-                <Link
-                  href="/community"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium bg-primary/10 text-primary"
+                <button
+                  onClick={() => setSortOption("home")}
+                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                    sortOption === "home" ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                  }`}
                 >
                   <Home className="h-4 w-4" />
                   Home
-                </Link>
+                </button>
+                <button
+                  onClick={() => setSortOption("recent")}
+                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                    sortOption === "recent" ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                  }`}
+                >
+                  <Clock className="h-4 w-4" /> {/* Replace with Clock icon */}
+                  Recent
+                </button>
+                <button
+                  onClick={() => setSortOption("trending")}
+                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                    sortOption === "trending" ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                  }`}
+                >
+                  <TrendingUp className="h-4 w-4" /> {/* Replace with TrendingUp icon */}
+                  Trending
+                </button>
               </nav>
             </div>
             <Separator />
