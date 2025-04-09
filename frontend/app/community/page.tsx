@@ -13,7 +13,6 @@ import {
   Search,
   PlusCircle,
   Share2,
-  Filter,
   Bell,
   User,
   Home,
@@ -100,6 +99,7 @@ export default function CommunityPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [createType, setCreateType] = useState<"issue" | "petition">("petition")
   const [petitions, setPetitions] = useState(MOCK_PETITIONS)
+  const [selectedCategory, setSelectedCategory] = useState("")
 
   // Form states
   const [title, setTitle] = useState("")
@@ -152,6 +152,11 @@ export default function CommunityPage() {
     setDeadline("30")
   }
 
+  // Ensure the filter dynamically updates the displayed petitions
+  const filteredPetitions = petitions.filter((petition) =>
+    selectedCategory === "" || petition.category === selectedCategory
+  );
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b sticky top-0 z-50 bg-background">
@@ -193,17 +198,38 @@ export default function CommunityPage() {
             </div>
             <Separator />
             <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Categories</h3>
+              <h3 className="text-lg font-semibold mb-4">Filters</h3>
               <div className="space-y-2">
+                <div
+                  className={`flex items-center justify-between cursor-pointer ${
+                    selectedCategory === "" ? "text-primary font-semibold" : ""
+                  }`}
+                  onClick={() => setSelectedCategory("")}
+                >
+                  <span className="text-sm">All Categories</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {petitions.length}
+                  </Badge>
+                </div>
                 {["Transportation", "Environment", "Senior Welfare", "Safety", "Education"].map(
                   (category) => (
-                    <div key={category} className="flex items-center justify-between">
+                    <div
+                      key={category}
+                      className={`flex items-center justify-between cursor-pointer ${
+                        selectedCategory === category ? "text-primary font-semibold" : ""
+                      }`}
+                      onClick={() => setSelectedCategory(category)}
+                    >
                       <span className="text-sm">{category}</span>
                       <Badge variant="secondary" className="text-xs">
-                        {Math.floor(Math.random() * 50) + 10}
+                        {
+                          petitions.filter(
+                            (petition) => petition.category === category
+                          ).length
+                        }
                       </Badge>
                     </div>
-                  ),
+                  )
                 )}
               </div>
             </div>
@@ -223,105 +249,99 @@ export default function CommunityPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="gap-1">
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button>
-              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogTrigger asChild>
-                  <Button className="gap-1">
-                    <PlusCircle className="h-4 w-4" />
-                    Create New
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[525px]">
-                  <DialogHeader>
-                    <DialogTitle>Create New Petition</DialogTitle>
-                  </DialogHeader>
-                  <Tabs defaultValue="petition">
-                    <TabsContent value="petition" className="space-y-4 mt-4">
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button className="gap-1">
+                  <PlusCircle className="h-4 w-4" />
+                  Create New
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Petition</DialogTitle>
+                </DialogHeader>
+                <Tabs defaultValue="petition">
+                  <TabsContent value="petition" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <label htmlFor="petition-title" className="text-sm font-medium">
+                        Petition Title
+                      </label>
+                      <Input
+                        id="petition-title"
+                        placeholder="Enter a clear title for your petition"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="petition-description" className="text-sm font-medium">
+                        Description
+                      </label>
+                      <Textarea
+                        id="petition-description"
+                        placeholder="Describe what you're petitioning for and why"
+                        className="min-h-[100px]"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label htmlFor="petition-title" className="text-sm font-medium">
-                          Petition Title
+                        <label htmlFor="petition-category" className="text-sm font-medium">
+                          Category
+                        </label>
+                        <Select value={category} onValueChange={setCategory}>
+                          <SelectTrigger id="petition-category">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="transportation">Transportation</SelectItem>
+                            <SelectItem value="environment">Environment</SelectItem>
+                            <SelectItem value="senior-welfare">Senior Welfare</SelectItem>
+                            <SelectItem value="safety">Safety</SelectItem>
+                            <SelectItem value="education">Education</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="target" className="text-sm font-medium">
+                          Target Signatures
                         </label>
                         <Input
-                          id="petition-title"
-                          placeholder="Enter a clear title for your petition"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="petition-description" className="text-sm font-medium">
-                          Description
-                        </label>
-                        <Textarea
-                          id="petition-description"
-                          placeholder="Describe what you're petitioning for and why"
-                          className="min-h-[100px]"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label htmlFor="petition-category" className="text-sm font-medium">
-                            Category
-                          </label>
-                          <Select value={category} onValueChange={setCategory}>
-                            <SelectTrigger id="petition-category">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="transportation">Transportation</SelectItem>
-                              <SelectItem value="environment">Environment</SelectItem>
-                              <SelectItem value="senior-welfare">Senior Welfare</SelectItem>
-                              <SelectItem value="safety">Safety</SelectItem>
-                              <SelectItem value="education">Education</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <label htmlFor="target" className="text-sm font-medium">
-                            Target Signatures
-                          </label>
-                          <Input
-                            id="target"
-                            type="number"
-                            placeholder="1000"
-                            value={target}
-                            onChange={(e) => setTarget(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="deadline" className="text-sm font-medium">
-                          Deadline (days)
-                        </label>
-                        <Input
-                          id="deadline"
+                          id="target"
                           type="number"
-                          placeholder="30"
-                          value={deadline}
-                          onChange={(e) => setDeadline(e.target.value)}
+                          placeholder="1000"
+                          value={target}
+                          onChange={(e) => setTarget(e.target.value)}
                         />
                       </div>
-                    </TabsContent>
-                  </Tabs>
-                  <DialogFooter className="mt-4">
-                    <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleSubmit}>Submit</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="deadline" className="text-sm font-medium">
+                        Deadline (days)
+                      </label>
+                      <Input
+                        id="deadline"
+                        type="number"
+                        placeholder="30"
+                        value={deadline}
+                        onChange={(e) => setDeadline(e.target.value)}
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                <DialogFooter className="mt-4">
+                  <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSubmit}>Submit</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="space-y-4">
-            {petitions.map((petition) => (
+            {filteredPetitions.map((petition) => (
               <Card key={petition.id} className="hover:shadow-md transition-shadow overflow-hidden">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
