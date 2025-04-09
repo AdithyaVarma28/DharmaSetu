@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge"
 import { FileUploader } from "@/components/file-uploader"
 import { ChatMessage } from "@/components/chat-message"
-import { Paperclip, Send, X, Scale, Globe } from "lucide-react"
+import { Paperclip, Send, Mic, X, Scale, Globe } from "lucide-react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import axios from 'axios'
@@ -47,7 +47,6 @@ export default function AppPage() {
       const index = Number.parseInt(moduleParam) - 1
       if (index >= 0 && index < modules.length) {
         setActiveModule(modules[index])
-        setMessages(INITIAL_MESSAGES); // Reset messages to initial state
       }
     }
   }, [moduleParam])
@@ -60,8 +59,6 @@ export default function AppPage() {
   // Handle sending a message
   const handleSendMessage = async () => {
     if (input.trim() === '' && attachments.length === 0) return;
-
-    console.log('User Input:', input); // Log user input to the console
 
     const userMessage = {
       id: messages.length + 1,
@@ -77,8 +74,28 @@ export default function AppPage() {
     setIsProcessing(true);
     setProcessingStep(0);
 
+    const steps = ["Thinking", "Analysing User request", "Compiling summary", "Finalising"];
+    let stepIndex = 0;
+
+    // Generate a random total time for the animation (between 2 and 5 seconds)
+    const totalAnimationTime = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+    const stepDuration = totalAnimationTime / steps.length;
+
+    const stepInterval = setInterval(() => {
+      setProcessingStep(stepIndex);
+      stepIndex++;
+      if (stepIndex >= steps.length) {
+        clearInterval(stepInterval);
+      }
+    }, stepDuration);
+
     try {
+      // Wait for the animation to complete before sending the request
+      await new Promise((resolve) => setTimeout(resolve, totalAnimationTime));
+
       const response = await axios.post('http://127.0.0.1:5000/api/run_chatbot', { query: input });
+      setProcessingStep(steps.length); // Mark all steps as completed
+
       const aiResponse = {
         id: messages.length + 2,
         role: 'system',
@@ -92,7 +109,7 @@ export default function AppPage() {
     } finally {
       setIsProcessing(false);
     }
-  }
+  };
 
   // Handle file upload
   const handleFileUpload = (files: string[]) => {
@@ -282,6 +299,17 @@ export default function AppPage() {
                           <p className="text-xs text-gray-500">Drag and drop to upload</p>
                           <FileUploader onUpload={handleFileUpload} />
                         </div>
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium">Attach URL</h3>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Enter a publicly accessible URL"
+                              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                            <Button>Attach</Button>
+                          </div>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -301,6 +329,9 @@ export default function AppPage() {
                 />
 
                 <div className="flex gap-2">
+                  <Button variant="outline" size="icon" className="shrink-0">
+                    <Mic className="h-4 w-4" />
+                  </Button>
                   <Button size="icon" className="shrink-0" onClick={handleSendMessage}>
                     <Send className="h-4 w-4" />
                   </Button>
