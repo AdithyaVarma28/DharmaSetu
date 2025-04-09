@@ -1,12 +1,9 @@
-import fitz  # PyMuPDF
+import fitz 
 import pytesseract
 from PIL import Image
 import io
 import requests
-import json
-
-GROQ_KEY="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"
-GROQ_API_URL="https://api.groq.com/openai/v1/chat/completions"
+from config import GROQ_API_URL,GROQ_KEY
 
 pytesseract.pytesseract.tesseract_cmd=r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
