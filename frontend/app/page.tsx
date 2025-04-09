@@ -12,13 +12,13 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b sticky top-0 z-50 bg-background">
-        <div className="container flex h-16 items-center px-4 md:px-6">
-          <div className="flex items-center gap-2">
+        <div className="container flex h-16 items-center px-4 md:px-6 gap-4 md:gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <Scale className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">DharmaSetu</span>
           </div>
           <MainNav className={`absolute top-16 left-0 w-full bg-background shadow-md ${isMobileMenuOpen ? "block" : "hidden"} md:static md:top-auto md:left-auto md:w-auto md:shadow-none md:flex`} />
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-6 md:gap-8">
             <Link href="/app">
               <Button className="hidden md:block">Get Started</Button>
             </Link>

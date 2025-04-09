@@ -12,14 +12,8 @@ import { Separator } from "@/components/ui/separator"
 import {
   Search,
   PlusCircle,
-  ThumbsUp,
-  ThumbsDown,
-  MessageSquare,
   Share2,
   Filter,
-  TrendingUp,
-  Clock,
-  Award,
   Bell,
   User,
   Home,
@@ -30,72 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-// Mock data for issues and petitions
-const MOCK_ISSUES = [
-  {
-    id: 1,
-    title: "Inadequate Street Lighting in Sector 7",
-    description:
-      "The street lights in Sector 7 have been non-functional for over a month, creating safety concerns for residents.",
-    category: "Infrastructure",
-    location: "Delhi, Sector 7",
-    createdBy: "Rahul Sharma",
-    createdAt: "2 days ago",
-    status: "Open",
-    votes: { up: 45, down: 3 },
-    comments: 12,
-  },
-  {
-    id: 2,
-    title: "Delay in Ration Card Processing",
-    description:
-      "Applied for a ration card 3 months ago but still haven't received any update on the application status.",
-    category: "Government Services",
-    location: "Mumbai, Andheri East",
-    createdBy: "Priya Patel",
-    createdAt: "1 week ago",
-    status: "Under Review",
-    votes: { up: 78, down: 5 },
-    comments: 23,
-  },
-  {
-    id: 3,
-    title: "Water Contamination in Residential Area",
-    description: "Residents of Green Park have been receiving contaminated water supply for the past two weeks.",
-    category: "Public Health",
-    location: "Bangalore, Green Park",
-    createdBy: "Ananya Singh",
-    createdAt: "3 days ago",
-    status: "Escalated",
-    votes: { up: 132, down: 2 },
-    comments: 45,
-  },
-  {
-    id: 4,
-    title: "Pothole Hazards on Main Road",
-    description: "Multiple large potholes on the main road causing accidents and vehicle damage.",
-    category: "Infrastructure",
-    location: "Chennai, Anna Nagar",
-    createdBy: "Karthik Rajan",
-    createdAt: "5 days ago",
-    status: "Open",
-    votes: { up: 89, down: 1 },
-    comments: 34,
-  },
-  {
-    id: 5,
-    title: "Irregular Garbage Collection",
-    description: "Garbage collection has been irregular for the past month leading to waste accumulation.",
-    category: "Sanitation",
-    location: "Hyderabad, Jubilee Hills",
-    createdBy: "Sanjay Reddy",
-    createdAt: "4 days ago",
-    status: "Open",
-    votes: { up: 67, down: 4 },
-    comments: 19,
-  },
-]
-
+// Mock data for petitions
 const MOCK_PETITIONS = [
   {
     id: 1,
@@ -109,6 +38,7 @@ const MOCK_PETITIONS = [
     createdBy: "Citizens for Better Transport",
     createdAt: "2 weeks ago",
     status: "Active",
+    signed: false, // Added signed property
   },
   {
     id: 2,
@@ -121,6 +51,7 @@ const MOCK_PETITIONS = [
     createdBy: "Green Earth Initiative",
     createdAt: "3 weeks ago",
     status: "Active",
+    signed: false,
   },
   {
     id: 3,
@@ -133,6 +64,7 @@ const MOCK_PETITIONS = [
     createdBy: "Senior Citizens Association",
     createdAt: "1 week ago",
     status: "Active",
+    signed: false,
   },
   {
     id: 4,
@@ -145,6 +77,7 @@ const MOCK_PETITIONS = [
     createdBy: "Parents Safety Coalition",
     createdAt: "2 weeks ago",
     status: "Active",
+    signed: false,
   },
   {
     id: 5,
@@ -157,21 +90,21 @@ const MOCK_PETITIONS = [
     createdBy: "Community Readers Group",
     createdAt: "1 week ago",
     status: "Active",
+    signed: false,
   },
 ]
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState("issues")
   const [sortOption, setSortOption] = useState("trending")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [createType, setCreateType] = useState<"issue" | "petition">("issue")
+  const [createType, setCreateType] = useState<"issue" | "petition">("petition")
+  const [petitions, setPetitions] = useState(MOCK_PETITIONS)
 
   // Form states
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
-  const [location, setLocation] = useState("")
   const [target, setTarget] = useState("1000")
   const [deadline, setDeadline] = useState("30")
 
@@ -180,14 +113,41 @@ export default function CommunityPage() {
     setShowCreateDialog(true)
   }
 
+  const handleSignPetition = (id: number) => {
+    if (window.confirm("Are you sure you want to sign this petition?")) {
+      setPetitions((prev) =>
+        prev.map((petition) =>
+          petition.id === id
+            ? {
+                ...petition,
+                signatures: Math.min(petition.signatures + 1, petition.target), // Increment by 1
+                signed: true, // Mark as signed
+              }
+            : petition
+        )
+      )
+    }
+  }
+
   const handleSubmit = () => {
-    // Here you would normally submit the data to your backend
-    // For now, we'll just close the dialog and reset the form
+    const newPetition = {
+      id: petitions.length + 1,
+      title,
+      description,
+      category,
+      target: parseInt(target),
+      signatures: 0,
+      deadline: `${deadline} days left`,
+      createdBy: "You",
+      createdAt: "Just now",
+      status: "Active",
+      signed: false,
+    }
+    setPetitions((prev) => [newPetition, ...prev])
     setShowCreateDialog(false)
     setTitle("")
     setDescription("")
     setCategory("")
-    setLocation("")
     setTarget("1000")
     setDeadline("30")
   }
@@ -229,34 +189,13 @@ export default function CommunityPage() {
                   <Home className="h-4 w-4" />
                   Home
                 </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  Trending
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  <Award className="h-4 w-4" />
-                  Popular
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  <Clock className="h-4 w-4" />
-                  Recent
-                </Link>
               </nav>
             </div>
             <Separator />
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-4">Categories</h3>
               <div className="space-y-2">
-                {["Infrastructure", "Government Services", "Public Health", "Environment", "Education", "Safety"].map(
+                {["Transportation", "Environment", "Senior Welfare", "Safety", "Education"].map(
                   (category) => (
                     <div key={category} className="flex items-center justify-between">
                       <span className="text-sm">{category}</span>
@@ -278,7 +217,7 @@ export default function CommunityPage() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="search"
-                placeholder="Search issues or petitions..."
+                placeholder="Search petitions..."
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -298,69 +237,9 @@ export default function CommunityPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[525px]">
                   <DialogHeader>
-                    <DialogTitle>Create New {createType === "issue" ? "Issue" : "Petition"}</DialogTitle>
+                    <DialogTitle>Create New Petition</DialogTitle>
                   </DialogHeader>
-                  <Tabs defaultValue="issue" onValueChange={(value) => setCreateType(value as "issue" | "petition")}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="issue">Issue</TabsTrigger>
-                      <TabsTrigger value="petition">Petition</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="issue" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <label htmlFor="title" className="text-sm font-medium">
-                          Title
-                        </label>
-                        <Input
-                          id="title"
-                          placeholder="Enter a clear title for your issue"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="description" className="text-sm font-medium">
-                          Description
-                        </label>
-                        <Textarea
-                          id="description"
-                          placeholder="Describe the issue in detail"
-                          className="min-h-[100px]"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label htmlFor="category" className="text-sm font-medium">
-                            Category
-                          </label>
-                          <Select value={category} onValueChange={setCategory}>
-                            <SelectTrigger id="category">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                              <SelectItem value="government">Government Services</SelectItem>
-                              <SelectItem value="health">Public Health</SelectItem>
-                              <SelectItem value="environment">Environment</SelectItem>
-                              <SelectItem value="education">Education</SelectItem>
-                              <SelectItem value="safety">Safety</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <label htmlFor="location" className="text-sm font-medium">
-                            Location
-                          </label>
-                          <Input
-                            id="location"
-                            placeholder="City, Area"
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </TabsContent>
+                  <Tabs defaultValue="petition">
                     <TabsContent value="petition" className="space-y-4 mt-4">
                       <div className="space-y-2">
                         <label htmlFor="petition-title" className="text-sm font-medium">
@@ -395,12 +274,11 @@ export default function CommunityPage() {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                              <SelectItem value="government">Government Services</SelectItem>
-                              <SelectItem value="health">Public Health</SelectItem>
+                              <SelectItem value="transportation">Transportation</SelectItem>
                               <SelectItem value="environment">Environment</SelectItem>
-                              <SelectItem value="education">Education</SelectItem>
+                              <SelectItem value="senior-welfare">Senior Welfare</SelectItem>
                               <SelectItem value="safety">Safety</SelectItem>
+                              <SelectItem value="education">Education</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -442,163 +320,68 @@ export default function CommunityPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <Tabs defaultValue="issues" className="w-full" onValueChange={setActiveTab}>
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="issues">Issues</TabsTrigger>
-                <TabsTrigger value="petitions">Petitions</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <div className="hidden md:flex items-center gap-2">
-              <span className="text-sm text-gray-500">Sort by:</span>
-              <select
-                className="text-sm border rounded-md px-2 py-1"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-              >
-                <option value="trending">Trending</option>
-                <option value="newest">Newest</option>
-                <option value="votes">Most Votes</option>
-              </select>
-            </div>
-          </div>
-
           <div className="space-y-4">
-            {activeTab === "issues" ? (
-              <>
-                {MOCK_ISSUES.map((issue) => (
-                  <Card key={issue.id} className="hover:shadow-md transition-shadow overflow-hidden">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg hover:text-primary cursor-pointer">{issue.title}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline">{issue.category}</Badge>
-                            <span className="text-xs text-gray-500">{issue.location}</span>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={
-                            issue.status === "Open"
-                              ? "default"
-                              : issue.status === "Under Review"
-                                ? "secondary"
-                                : "destructive"
-                          }
-                        >
-                          {issue.status}
-                        </Badge>
+            {petitions.map((petition) => (
+              <Card key={petition.id} className="hover:shadow-md transition-shadow overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg hover:text-primary cursor-pointer">{petition.title}</CardTitle>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline">{petition.category}</Badge>
+                        <span className="text-xs text-gray-500">{petition.deadline}</span>
                       </div>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <p className="text-sm text-gray-600">{issue.description}</p>
-                    </CardContent>
-                    <CardFooter className="flex flex-col space-y-2 pt-0">
-                      <Separator />
-                      <div className="flex justify-between items-center w-full">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback>{issue.createdBy.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs text-gray-500">
-                            {issue.createdBy} • {issue.createdAt}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <ThumbsUp className="h-4 w-4" />
-                            </Button>
-                            <span className="text-xs">{issue.votes.up}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <ThumbsDown className="h-4 w-4" />
-                            </Button>
-                            <span className="text-xs">{issue.votes.down}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                            <span className="text-xs">{issue.comments}</span>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Share2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
-                <div className="flex justify-center mt-6">
-                  <Button variant="outline" onClick={() => handleCreateNew("issue")}>
-                    <PlusCircle className="h-4 w-4 mr-2" /> Create New Issue
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                {MOCK_PETITIONS.map((petition) => (
-                  <Card key={petition.id} className="hover:shadow-md transition-shadow overflow-hidden">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg hover:text-primary cursor-pointer">{petition.title}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline">{petition.category}</Badge>
-                            <span className="text-xs text-gray-500">{petition.deadline}</span>
-                          </div>
-                        </div>
-                        <Badge>{petition.status}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <p className="text-sm text-gray-600">{petition.description}</p>
-                      <div className="mt-4">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Progress</span>
-                          <span>
-                            {petition.signatures} of {petition.target} signatures
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="bg-primary h-2.5 rounded-full"
-                            style={{ width: `${Math.min(100, (petition.signatures / petition.target) * 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex flex-col space-y-2 pt-0">
-                      <Separator />
-                      <div className="flex justify-between items-center w-full">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback>{petition.createdBy.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs text-gray-500">
-                            {petition.createdBy} • {petition.createdAt}
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm">Sign Petition</Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Share2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
-                <div className="flex justify-center mt-6">
-                  <Button variant="outline" onClick={() => handleCreateNew("petition")}>
-                    <PlusCircle className="h-4 w-4 mr-2" /> Create New Petition
-                  </Button>
-                </div>
-              </>
-            )}
+                    </div>
+                    <Badge>{petition.status}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <p className="text-sm text-gray-600">{petition.description}</p>
+                  <div className="mt-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Progress</span>
+                      <span>
+                        {petition.signatures} of {petition.target} signatures
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-primary h-2.5 rounded-full"
+                        style={{ width: `${Math.min(100, (petition.signatures / petition.target) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex flex-col space-y-2 pt-0">
+                  <Separator />
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback>{petition.createdBy.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-gray-500">
+                        {petition.createdBy} • {petition.createdAt}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className={petition.signed ? "bg-green-500" : ""}
+                        onClick={() => handleSignPetition(petition.id)}
+                        disabled={petition.signed} // Disable button if already signed
+                      >
+                        {petition.signed ? "Signed Petition" : "Sign Petition"}
+                      </Button>
+                    </div>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+            <div className="flex justify-center mt-6">
+              <Button variant="outline" onClick={() => handleCreateNew("petition")}>
+                <PlusCircle className="h-4 w-4 mr-2" /> Create New Petition
+              </Button>
+            </div>
           </div>
         </div>
       </div>
