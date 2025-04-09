@@ -29,16 +29,20 @@ def correct_legal_text(user_input):
     }
 
     try:
-        response=requests.post(API_URL,headers=headers,json=payload)
+        response = requests.post(API_URL, headers=headers, json=payload)
         response.raise_for_status()
-        result=response.json()
-        generated=result[0]["generated_text"]
+        result = response.json()
 
-        corrected_line=generated.strip().split('\n')[0].strip(' "\'')
-        corrected_line=corrected_line.split('.')[0].strip()
+        if not result or not isinstance(result, list) or 'generated_text' not in result[0]:
+            print("Unexpected API response format:", result)
+            return "Error: Unable to process the query. Please try again later."
+
+        generated = result[0]["generated_text"]
+        corrected_line = generated.strip().split('\n')[0].strip(' "\'')
+        corrected_line = corrected_line.split('.')[0].strip()
 
         return corrected_line
 
     except requests.exceptions.RequestException as e:
         print(f"API Error: {e}")
-        return None
+        return "Error: Unable to connect to the API. Please try again later."

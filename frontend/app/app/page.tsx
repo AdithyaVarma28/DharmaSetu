@@ -75,17 +75,29 @@ export default function AppPage() {
     setProcessingStep(0);
 
     try {
-      const response = await axios.post('http://127.0.0.1:5000/api/run_chatbot', { query: input });
-      const aiResponse = {
-        id: messages.length + 2,
-        role: 'system',
-        content: response.data.response,
-      };
+      const response = await axios.post('http://127.0.0.1:5000/api/run_chatbot', { query: input }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      setMessages((prev) => [...prev, aiResponse]);
+      if (response.status === 200 && response.data.response) {
+        const aiResponse = {
+          id: messages.length + 2,
+          role: 'system',
+          content: response.data.response,
+        };
+        setMessages((prev) => [...prev, aiResponse]);
+      } else if (response.data.error) {
+        console.error('Backend error:', response.data.error);
+        setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: response.data.error }]);
+      } else {
+        console.error('Unexpected response format:', response);
+        setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'Unexpected response from the server.' }]);
+      }
     } catch (error) {
       console.error('Error communicating with the backend:', error);
-      setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'Error processing your request.' }]);
+      setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'Error processing your request. Please try again later.' }]);
     } finally {
       setIsProcessing(false);
     }
