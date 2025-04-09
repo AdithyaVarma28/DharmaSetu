@@ -24,11 +24,10 @@ def get_most_relevant_doc_id(searchquery):
         most_relevant_doc=docs[0]
         title=most_relevant_doc.get('title','Unknown Title')
         tid=most_relevant_doc.get('tid')
-        print(f"Most Relevant Document: {title} (ID: {tid})")
         return tid
 
     except requests.exceptions.RequestException as err:
-        print(" Error while searching:",err)
+        print("Error while searching:",err)
         return None
 
 def get_cleaned_document_by_id(doc_id):
