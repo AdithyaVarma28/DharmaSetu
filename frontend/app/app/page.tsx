@@ -12,6 +12,7 @@ import { ChatMessage } from "@/components/chat-message"
 import { Paperclip, Send, Mic, X, Scale, Globe } from "lucide-react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import axios from 'axios'
 
 // Mock data for chat messages
 const INITIAL_MESSAGES = [
@@ -56,49 +57,38 @@ export default function AppPage() {
   }, [messages])
 
   // Handle sending a message
-  const handleSendMessage = () => {
-    if (input.trim() === "" && attachments.length === 0) return
+  const handleSendMessage = async () => {
+    if (input.trim() === '' && attachments.length === 0) return;
 
-    // Add user message
     const userMessage = {
       id: messages.length + 1,
-      role: "user",
+      role: 'user',
       content: input,
       attachments: [...attachments],
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setAttachments([]);
+
+    setIsProcessing(true);
+    setProcessingStep(0);
+
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/api/run_chatbot', { query: input });
+      const aiResponse = {
+        id: messages.length + 2,
+        role: 'system',
+        content: response.data.response,
+      };
+
+      setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error communicating with the backend:', error);
+      setMessages((prev) => [...prev, { id: messages.length + 2, role: 'system', content: 'Error processing your request.' }]);
+    } finally {
+      setIsProcessing(false);
     }
-
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-    setAttachments([])
-
-    // Simulate processing
-    setIsProcessing(true)
-    setProcessingStep(0)
-
-    // Simulate AI response after processing
-    const processingSteps = ["Thinking", "Analysing User request", "Compiling summary", "Finalising"]
-    let currentStep = 0
-
-    const processingInterval = setInterval(() => {
-      if (currentStep < processingSteps.length - 1) {
-        currentStep++
-        setProcessingStep(currentStep)
-      } else {
-        clearInterval(processingInterval)
-
-        // Add AI response
-        setTimeout(() => {
-          const aiResponse = {
-            id: messages.length + 2,
-            role: "system",
-            content: generateMockResponse(activeModule, input, language),
-          }
-
-          setMessages((prev) => [...prev, aiResponse])
-          setIsProcessing(false)
-        }, 1000)
-      }
-    }, 1000)
   }
 
   // Handle file upload
