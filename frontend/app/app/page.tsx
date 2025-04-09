@@ -60,8 +60,6 @@ export default function AppPage() {
   const handleSendMessage = async () => {
     if (input.trim() === '' && attachments.length === 0) return;
 
-    console.log('User Input:', input); // Log user input to the console
-
     const userMessage = {
       id: messages.length + 1,
       role: 'user',
@@ -76,8 +74,28 @@ export default function AppPage() {
     setIsProcessing(true);
     setProcessingStep(0);
 
+    const steps = ["Thinking", "Analysing User request", "Compiling summary", "Finalising"];
+    let stepIndex = 0;
+
+    // Generate a random total time for the animation (between 2 and 5 seconds)
+    const totalAnimationTime = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+    const stepDuration = totalAnimationTime / steps.length;
+
+    const stepInterval = setInterval(() => {
+      setProcessingStep(stepIndex);
+      stepIndex++;
+      if (stepIndex >= steps.length) {
+        clearInterval(stepInterval);
+      }
+    }, stepDuration);
+
     try {
+      // Wait for the animation to complete before sending the request
+      await new Promise((resolve) => setTimeout(resolve, totalAnimationTime));
+
       const response = await axios.post('http://127.0.0.1:5000/api/run_chatbot', { query: input });
+      setProcessingStep(steps.length); // Mark all steps as completed
+
       const aiResponse = {
         id: messages.length + 2,
         role: 'system',
@@ -91,7 +109,7 @@ export default function AppPage() {
     } finally {
       setIsProcessing(false);
     }
-  }
+  };
 
   // Handle file upload
   const handleFileUpload = (files: string[]) => {

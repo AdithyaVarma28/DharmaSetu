@@ -63,4 +63,4 @@ def analyze_document(text,mode='cr'):
         result=response.json()
         return result['choices'][0]['message']['content']
     else:
-        return f"Error: {response.text}"
+        return "Sorry, I didn't understand you"
