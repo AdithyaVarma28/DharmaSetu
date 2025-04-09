@@ -1,15 +1,16 @@
 import requests
-from modules.config import GROQ_KEY,GROQ_API_URL
+from modules.config import GROQ_KEY, GROQ_API_URL
 
-HEADERS = {
+HEADERS={
     "Authorization": f"Bearer {GROQ_KEY}",
     "Content-Type": "application/json"
 }
 
 def summarize_legal_text(user_text: str, raw_text: str = "") -> str:
     system_prompt = (
-        "You are a legal assistant. Answer the user's legal query clearly and concisely. "
-        "Use the background legal text only if it helps clarify or support the answer."
+        "You are a bilingual legal assistant. Respond to the user's legal query in the same language "
+        "as the question — either Hindi or English. Be clear, concise, and use the background legal text "
+        "only if it helps clarify or support the answer."
     )
 
     messages = [
