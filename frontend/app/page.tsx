@@ -1,9 +1,14 @@
+"use client"
+
+import { useState } from "react";
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, CheckCircle, Shield, Scale, FileText, Users } from "lucide-react"
 import { MainNav } from "@/components/main-nav"
 
 export default function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b sticky top-0 z-50 bg-background">
@@ -12,11 +17,32 @@ export default function Home() {
             <Scale className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">DharmaSetu</span>
           </div>
-          <MainNav className="mx-6" />
+          <MainNav className={`absolute top-16 left-0 w-full bg-background shadow-md ${isMobileMenuOpen ? "block" : "hidden"} md:static md:top-auto md:left-auto md:w-auto md:shadow-none md:flex`} />
           <div className="ml-auto flex items-center gap-4">
             <Link href="/app">
-              <Button>Get Started</Button>
+              <Button className="hidden md:block">Get Started</Button>
             </Link>
+          </div>
+          <div className="md:hidden ml-auto">
+            <button
+              className="p-2 text-primary"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16m-7 6h7"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       </header> 
