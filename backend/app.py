@@ -7,25 +7,30 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app) 
 
-def run_legal_chatbot(query):
+def run_legal_chatbot(query, module="legal-assistant"):
     clean_query = correct_legal_text(query)
 
-    doc_id = get_most_relevant_doc_id(clean_query)
-    if doc_id:
-        content = get_cleaned_document_by_id(doc_id)
-        if not content:
-            # if content is empty
-            content=""
-    else:
-        # if you don't get doc_id
-        content=""
+    content=""
 
+    if module == "case-predictor":
+        doc_id = get_most_relevant_doc_id(clean_query)
+        if doc_id:
+            content = get_cleaned_document_by_id(doc_id)
+            if not content:
+                content = ""
+        else:
+            content = ""
+
+        if content:
+            query += f"\n\nRelevant Case:\n{content}"
+
+    query+=". Can you also give me a relavent case"
+    
     answer = summarize_legal_text(query,content)
 
     if answer:
         return answer
     else:
-        # if you don't get answer
         return "Sorry, I couldn't find an answer to your question."
 
 @app.route('/api/correct_query', methods=['POST'])
@@ -52,10 +57,12 @@ def api_summarize():
 def api_run_chatbot():
     data = request.json
     query = data.get('query', '')
+    module = data.get('module', 'legal-assistant')
+
     if not query:
         return jsonify({'error': 'Query is required'}), 400
 
-    response = run_legal_chatbot(query)
+    response = run_legal_chatbot(query, module)
     return jsonify({'response': response})
 
 if __name__ == '__main__':
