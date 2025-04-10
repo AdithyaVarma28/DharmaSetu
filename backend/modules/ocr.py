@@ -3,19 +3,22 @@ import pytesseract
 from PIL import Image
 import io
 import requests
-from config import GROQ_API_URL,GROQ_KEY
+from modules.config import GROQ_API_URL,GROQ_KEY
 
 pytesseract.pytesseract.tesseract_cmd=r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 def extract_text_from_pdf(pdf_path):
-    doc=fitz.open(pdf_path)
-    full_text=""
-    for i,page in enumerate(doc):
-        pix=page.get_pixmap(dpi=200)
-        img=Image.open(io.BytesIO(pix.tobytes("png")))
-        text=pytesseract.image_to_string(img)
-        full_text+=f"\n\n--- Page {i+1} ---\n{text}"
-    return full_text
+    try:
+        doc = fitz.open(pdf_path)
+        full_text = ""
+        for i, page in enumerate(doc):
+            pix = page.get_pixmap(dpi=200)
+            img = Image.open(io.BytesIO(pix.tobytes("png")))
+            text = pytesseract.image_to_string(img)
+            full_text += f"\n\n--- Page {i+1} ---\n{text}"
+        return full_text
+    except Exception as e:
+        return f"Error processing PDF: {str(e)}"
 
 def analyze_document(text,mode='cr'):
     if mode=='cr':

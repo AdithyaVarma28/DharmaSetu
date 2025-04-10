@@ -112,10 +112,60 @@ export default function AppPage() {
   };
 
   // Handle file upload
-  const handleFileUpload = (files: string[]) => {
-    setAttachments((prev) => [...prev, ...files])
-    setShowAttachDialog(false)
-  }
+  const handleFileUpload = async (files: File[]) => {
+    if (!files || files.length === 0) return;
+    
+    // Get the current module's mode
+    const mode = activeModule === "language-simplifier" ? "ls" : "cr";
+    
+    const file = files[0]; // Take the first file
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('mode', mode);
+    
+    setIsProcessing(true);
+    
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/api/upload_file', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.status === 200) {
+        // Add the file as an attachment and show it in the chat
+        setAttachments(prev => [...prev, file.name]);
+        
+        // Add the processed result to the chat
+        const aiResponse = {
+          id: messages.length + 1,
+          role: 'system',
+          content: response.data.result
+        };
+        
+        setMessages(prev => [...prev, aiResponse]);
+        
+        // Close the dialog after successful upload
+        setShowAttachDialog(false);
+      } else {
+        throw new Error(`Unexpected response: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      
+      // Add a user-friendly error message
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: messages.length + 1,
+          role: 'system',
+          content: 'Error processing your document. Please ensure the file is valid and try again.',
+        },
+      ]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // Remove attachment
   const removeAttachment = (index: number) => {
@@ -125,31 +175,30 @@ export default function AppPage() {
   // Generate mock response based on active module and language
   const generateMockResponse = (module: string, query: string, language: string) => {
     let response = ""
-
     switch (module) {
       case "legal-assistant":
         response =
           "Based on your query, I can explain that the Indian Constitution is the supreme law of India. It lays down the framework defining fundamental political principles, establishes the structure, procedures, powers, and duties of government institutions, and sets out fundamental rights, directive principles, and duties of citizens. It was adopted on 26 November 1949 and came into effect on 26 January 1950."
-
+        break
       case "language-simplifier":
         response =
           "I've analyzed the legal document you shared. In simple terms, this document is a rental agreement that outlines the terms between a landlord and tenant. Key points include: 1) Monthly rent of ₹15,000, 2) Security deposit of ₹45,000, 3) 11-month lease period, 4) Tenant responsible for utility bills, 5) No subletting allowed."
-
+        break
       case "case-predictor":
         response =
           "Based on the case details you've provided and similar historical cases, there's approximately a 65% likelihood of a favorable outcome. The strongest arguments in your favor are the documented breach of contract and the evidence of financial loss. I recommend focusing on these aspects during proceedings."
-
+        break
       case "contract-review":
         response =
           "I've reviewed the contract and identified several potential issues: 1) Clause 4.2 contains ambiguous language regarding payment terms, 2) The liability limitation in Section 7 may not be enforceable under current regulations, 3) Missing clear dispute resolution mechanism, 4) Termination clause lacks specific conditions. I recommend addressing these issues before proceeding."
-
+        break
       default:
         response = "I've processed your request. Is there anything specific you'd like me to explain or clarify?"
     }
 
     // Simulate translation if language is not English
     if (language !== "english") {
-      return `[Translated to ${language.charAt(0).toUpperCase() + language.slice(1)}] ${response}`
+      return '[Translated to ${language.charAt(0).toUpperCase() + language.slice(1)}] ${response}'
     }
 
     return response
@@ -206,7 +255,6 @@ export default function AppPage() {
                   <h3 className="text-sm font-medium mb-2">
                     Completing <span className="text-xs text-gray-500">16 sec</span>
                   </h3>
-
                   <div className="flex items-center justify-between mb-4">
                     {["Thinking", "Analysing User request", "Compiling summary", "Finalising"].map((step, index) => (
                       <div key={index} className="flex flex-col items-center">
@@ -215,8 +263,8 @@ export default function AppPage() {
                             index < processingStep
                               ? "bg-green-500 text-white"
                               : index === processingStep
-                                ? "bg-primary text-white"
-                                : "bg-gray-200"
+                              ? "bg-primary text-white"
+                              : "bg-gray-200"
                           }`}
                         >
                           {index < processingStep ? "✓" : ""}
@@ -225,7 +273,6 @@ export default function AppPage() {
                       </div>
                     ))}
                   </div>
-
                   <div className="bg-white rounded-lg p-4 border">
                     <div className="flex items-center">
                       <h4 className="font-medium">Thinking</h4>
@@ -248,7 +295,6 @@ export default function AppPage() {
                         </svg>
                       </Button>
                     </div>
-
                     <div className="mt-2 text-sm">
                       <p>Analyzing user request...</p>
                       {attachments.length > 0 && <p className="mt-2">Processing attached documents...</p>}

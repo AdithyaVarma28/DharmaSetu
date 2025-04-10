@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Upload } from "lucide-react"
 
 interface FileUploaderProps {
-  onUpload: (files: string[]) => void
+  onUpload: (files: File[]) => void
 }
 
 export function FileUploader({ onUpload }: FileUploaderProps) {
@@ -26,13 +26,13 @@ export function FileUploader({ onUpload }: FileUploaderProps) {
     e.preventDefault()
     setIsDragging(false)
 
-    const files = Array.from(e.dataTransfer.files).map((file) => file.name)
+    const files = Array.from(e.dataTransfer.files)
     onUpload(files)
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const files = Array.from(e.target.files).map((file) => file.name)
+      const files = Array.from(e.target.files)
       onUpload(files)
     }
   }

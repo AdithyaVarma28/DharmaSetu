@@ -1,11 +1,19 @@
+import os
+from werkzeug.utils import secure_filename
 from modules.query import correct_legal_text
 from modules.generate import get_most_relevant_doc_id, get_cleaned_document_by_id
 from modules.summarize import summarize_legal_text
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
+from modules.ocr import analyze_document
 
 app = Flask(__name__)
 CORS(app) 
+
+# Create uploads directory if it doesn't exist
+UPLOAD_FOLDER = './uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 def run_legal_chatbot(query, module="legal-assistant"):
     clean_query = correct_legal_text(query)
@@ -65,7 +73,46 @@ def api_run_chatbot():
     response = run_legal_chatbot(query, module)
     return jsonify({'response': response})
 
+@app.route('/api/upload_file', methods=['POST'])
+def api_upload_file():
+    if 'file' not in request.files or 'mode' not in request.form:
+        return jsonify({'error': 'File and mode are required'}), 400
+
+    file = request.files['file']
+    mode = request.form['mode']
+
+    if mode not in ['ls', 'cr']:
+        return jsonify({'error': 'Invalid mode. Use "ls" or "cr".'}), 400
+
+    if file and file.filename:
+        # Save file locally
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+        
+        try:
+            # Determine file type and extract text accordingly
+            file_ext = os.path.splitext(filename)[1].lower()
+            
+            if file_ext == '.pdf':
+                from modules.ocr import extract_text_from_pdf
+                file_content = extract_text_from_pdf(file_path)
+            else:
+                # Assume it's a text file
+                from modules.ocr import extract_text_from_text_file
+                file_content = extract_text_from_text_file(file_path)
+            
+            # Process the file content
+            result = analyze_document(file_content, mode)
+            
+            return jsonify({
+                'result': result,
+                'file_path': file_path
+            })
+        except Exception as e:
+            return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+    else:
+        return jsonify({'error': 'File upload failed'}), 400
+
 if __name__ == '__main__':
     app.run(debug=True)
-
-
