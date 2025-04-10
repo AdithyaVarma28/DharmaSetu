@@ -104,6 +104,9 @@ export default function CommunityPage() {
   const [selectedCategory, setSelectedCategory] = useState("")
 
   // Form states
+  const [fullName, setFullName] = useState("")
+  const [parentInfo, setParentInfo] = useState("")
+  const [state, setState] = useState("")
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
@@ -124,6 +127,7 @@ export default function CommunityPage() {
                 ...petition,
                 signatures: Math.min(petition.signatures + 1, petition.target), // Increment by 1
                 signed: true, // Mark as signed
+                status: petition.signatures + 1 >= petition.target ? "Completed" : petition.status, // Update status
               }
             : petition
         )
@@ -131,44 +135,88 @@ export default function CommunityPage() {
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newPetition = {
-      id: petitions.length + 1,
+      full_name: fullName,
+      parent_info: parentInfo,
+      state,
+      issue: description,
       title,
-      description,
       category,
       target: parseInt(target),
-      signatures: 0,
       deadline: `${deadline} days left`,
-      createdBy: "You",
-      createdAt: "Just now",
-      status: "Active",
-      signed: false,
-    }
-    setPetitions((prev) => [newPetition, ...prev])
-    setShowCreateDialog(false)
-    setTitle("")
-    setDescription("")
-    setCategory("")
-    setTarget("1000")
-    setDeadline("30")
-  }
+    };
 
-  // Filter petitions based on the selected tab
-  const filteredPetitions = petitions.filter((petition) => {
-    if (sortOption === "recent") {
-      return petition.createdAt === "1 week ago"; // Match petitions with "1 week ago" in mock data
+    try {
+      const response = await fetch("/api/petitions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newPetition),
+      });
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      if (response.ok) {
+        const createdPetition = await response.json();
+        console.log("Created petition:", createdPetition);
+        setPetitions((prev) => [createdPetition, ...prev]);
+        setShowCreateDialog(false);
+        setFullName("");
+        setParentInfo("");
+        setState("");
+        setTitle("");
+        setDescription("");
+        setCategory("");
+        setTarget("1000");
+        setDeadline("30");
+      } else {
+        const contentType = response.headers.get("Content-Type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          console.error("Failed to create petition:", errorData.error || "Unknown error");
+          alert(`Error: ${errorData.error || "Failed to create petition"}`);
+        } else {
+          const errorText = await response.text();
+          console.error("Failed to create petition:", errorText);
+          alert("Error: An unexpected error occurred. Please check the server logs.");
+        }
+      }
+    } catch (error: unknown) {
+      console.error("Error:", error);
+      if (error instanceof Error) {
+        alert(`Error: ${error.message}`);
+      } else {
+        alert("Error: An unexpected error occurred");
+      }
     }
-    if (sortOption === "trending") {
-      return petition.signatures / petition.target >= 0.5; // Example: Trending if 50% or more signatures achieved
-    }
-    return selectedCategory === "" || petition.category === selectedCategory;
-  }).sort((a, b) => {
-    if (sortOption === "trending") {
-      return (b.signatures / b.target) - (a.signatures / a.target); // Sort by percentage of signatures achieved
-    }
-    return 0;
-  }).slice(0, sortOption === "trending" ? 3 : undefined); // Limit to top 3 for trending
+  };
+
+  // Filter petitions based on the selected tab and search query
+  const filteredPetitions = petitions
+    .filter((petition) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        petition.title.toLowerCase().includes(query) ||
+        petition.description.toLowerCase().includes(query)
+      );
+    })
+    .filter((petition) => {
+      if (sortOption === "recent") {
+        return petition.createdAt === "1 week ago"; // Match petitions with "1 week ago" in mock data
+      }
+      if (sortOption === "trending") {
+        return petition.signatures / petition.target >= 0.5; // Example: Trending if 50% or more signatures achieved
+      }
+      return selectedCategory === "" || petition.category === selectedCategory;
+    })
+    .sort((a, b) => {
+      if (sortOption === "trending") {
+        return b.signatures / b.target - a.signatures / a.target; // Sort by percentage of signatures achieved
+      }
+      return 0;
+    })
+    .slice(0, sortOption === "trending" ? 3 : undefined); // Limit to top 3 for trending
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -285,6 +333,39 @@ export default function CommunityPage() {
                 <Tabs defaultValue="petition">
                   <TabsContent value="petition" className="space-y-4 mt-4">
                     <div className="space-y-2">
+                      <label htmlFor="full-name" className="text-sm font-medium">
+                        Full Name
+                      </label>
+                      <Input
+                        id="full-name"
+                        placeholder="Enter your full name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="parent-info" className="text-sm font-medium">
+                        Parent/Guardian Information
+                      </label>
+                      <Input
+                        id="parent-info"
+                        placeholder="Enter parent/guardian information"
+                        value={parentInfo}
+                        onChange={(e) => setParentInfo(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="state" className="text-sm font-medium">
+                        State
+                      </label>
+                      <Input
+                        id="state"
+                        placeholder="Enter your state"
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
                       <label htmlFor="petition-title" className="text-sm font-medium">
                         Petition Title
                       </label>
@@ -297,11 +378,11 @@ export default function CommunityPage() {
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="petition-description" className="text-sm font-medium">
-                        Description
+                        Issue Description
                       </label>
                       <Textarea
                         id="petition-description"
-                        placeholder="Describe what you're petitioning for and why"
+                        placeholder="Describe your issue"
                         className="min-h-[100px]"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
@@ -374,7 +455,9 @@ export default function CommunityPage() {
                         <span className="text-xs text-gray-500">{petition.deadline}</span>
                       </div>
                     </div>
-                    <Badge>{petition.status}</Badge>
+                    <Badge className={petition.status === "Completed" ? "bg-green-500 text-white" : ""}>
+                      {petition.status}
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2">
@@ -410,9 +493,9 @@ export default function CommunityPage() {
                         size="sm"
                         className={petition.signed ? "bg-green-500" : ""}
                         onClick={() => handleSignPetition(petition.id)}
-                        disabled={petition.signed} // Disable button if already signed
+                        disabled={petition.signed || petition.status === "Completed"} // Disable if signed or completed
                       >
-                        {petition.signed ? "Signed Petition" : "Sign Petition"}
+                        {petition.signed ? "Signed Petition" : petition.status === "Completed" ? "Completed" : "Sign Petition"}
                       </Button>
                     </div>
                   </div>

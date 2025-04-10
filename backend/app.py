@@ -1,4 +1,5 @@
 import os
+import logging
 from werkzeug.utils import secure_filename
 from modules.query import correct_legal_text
 from modules.generate import get_most_relevant_doc_id, get_cleaned_document_by_id
@@ -6,9 +7,14 @@ from modules.summarize import summarize_legal_text
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
 from modules.ocr import analyze_document
+from modules.petition import generate_petition
+from modules.config import GROQ_KEY, GROQ_API_URL
 
 app = Flask(__name__)
 CORS(app) 
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Create uploads directory if it doesn't exist
 UPLOAD_FOLDER = './uploads'
@@ -113,6 +119,46 @@ def api_upload_file():
             return jsonify({'error': f'Error processing file: {str(e)}'}), 500
     else:
         return jsonify({'error': 'File upload failed'}), 400
+
+@app.route('/api/petitions', methods=['POST'])
+def create_petition():
+    try:
+        data = request.json
+        print("Incoming petition details:", data)  # Log the incoming petition details
+
+        required_fields = ["full_name", "parent_info", "state", "issue"]
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        petition_text = generate_petition(
+            data["full_name"],
+            data["parent_info"],
+            data["state"],
+            data["issue"]
+        )
+        print("Generated petition text:", petition_text)  # Log the generated petition text
+
+        # Simulate saving the petition (replace with actual DB logic)
+        created_petition = {
+            "id": 123,  # Example ID
+            "title": data.get("title", "Untitled Petition"),
+            "description": data["issue"],
+            "category": data.get("category", "General"),
+            "target": data.get("target", 1000),
+            "signatures": 0,
+            "deadline": data.get("deadline", "30 days left"),
+            "text": petition_text
+        }
+
+        return jsonify(created_petition), 201
+    except Exception as e:
+        return jsonify({'error': f'Error creating petition: {str(e)}'}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Handle unexpected errors and return a JSON response."""
+    logging.error(f"An unexpected error occurred: {str(e)}", exc_info=True)
+    return jsonify({'error': 'An unexpected error occurred. Please try again later.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
