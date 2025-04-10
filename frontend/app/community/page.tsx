@@ -135,61 +135,28 @@ export default function CommunityPage() {
     }
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const newPetition = {
-      full_name: fullName,
-      parent_info: parentInfo,
-      state,
-      issue: description,
+      id: petitions.length + 1, // Generate a new ID
       title,
+      description,
       category,
       target: parseInt(target),
+      signatures: 0, // Start with 0 signatures
       deadline: `${deadline} days left`,
+      createdBy: "You", // Placeholder for the creator
+      createdAt: "Just now", // Placeholder for creation time
+      status: "Active",
+      signed: false,
     };
 
-    try {
-      const response = await fetch("/api/petitions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newPetition),
-      });
-
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
-
-      if (response.ok) {
-        const createdPetition = await response.json();
-        console.log("Created petition:", createdPetition);
-        setPetitions((prev) => [createdPetition, ...prev]);
-        setShowCreateDialog(false);
-        setFullName("");
-        setParentInfo("");
-        setState("");
-        setTitle("");
-        setDescription("");
-        setCategory("");
-        setTarget("1000");
-        setDeadline("30");
-      } else {
-        const contentType = response.headers.get("Content-Type");
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await response.json();
-          console.error("Failed to create petition:", errorData.error || "Unknown error");
-          alert(`Error: ${errorData.error || "Failed to create petition"}`);
-        } else {
-          const errorText = await response.text();
-          console.error("Failed to create petition:", errorText);
-          alert("Error: An unexpected error occurred. Please check the server logs.");
-        }
-      }
-    } catch (error: unknown) {
-      console.error("Error:", error);
-      if (error instanceof Error) {
-        alert(`Error: ${error.message}`);
-      } else {
-        alert("Error: An unexpected error occurred");
-      }
-    }
+    setPetitions((prev) => [newPetition, ...prev]); // Add the new petition to the list
+    setShowCreateDialog(false); // Close the dialog
+    setTitle(""); // Reset form fields
+    setDescription("");
+    setCategory("");
+    setTarget("1000");
+    setDeadline("30");
   };
 
   // Filter petitions based on the selected tab and search query
@@ -333,39 +300,6 @@ export default function CommunityPage() {
                 <Tabs defaultValue="petition">
                   <TabsContent value="petition" className="space-y-4 mt-4">
                     <div className="space-y-2">
-                      <label htmlFor="full-name" className="text-sm font-medium">
-                        Full Name
-                      </label>
-                      <Input
-                        id="full-name"
-                        placeholder="Enter your full name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="parent-info" className="text-sm font-medium">
-                        Parent/Guardian Information
-                      </label>
-                      <Input
-                        id="parent-info"
-                        placeholder="Enter parent/guardian information"
-                        value={parentInfo}
-                        onChange={(e) => setParentInfo(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="state" className="text-sm font-medium">
-                        State
-                      </label>
-                      <Input
-                        id="state"
-                        placeholder="Enter your state"
-                        value={state}
-                        onChange={(e) => setState(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
                       <label htmlFor="petition-title" className="text-sm font-medium">
                         Petition Title
                       </label>
@@ -388,36 +322,22 @@ export default function CommunityPage() {
                         onChange={(e) => setDescription(e.target.value)}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label htmlFor="petition-category" className="text-sm font-medium">
-                          Category
-                        </label>
-                        <Select value={category} onValueChange={setCategory}>
-                          <SelectTrigger id="petition-category">
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="transportation">Transportation</SelectItem>
-                            <SelectItem value="environment">Environment</SelectItem>
-                            <SelectItem value="senior-welfare">Senior Welfare</SelectItem>
-                            <SelectItem value="safety">Safety</SelectItem>
-                            <SelectItem value="education">Education</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="target" className="text-sm font-medium">
-                          Target Signatures
-                        </label>
-                        <Input
-                          id="target"
-                          type="number"
-                          placeholder="1000"
-                          value={target}
-                          onChange={(e) => setTarget(e.target.value)}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <label htmlFor="petition-category" className="text-sm font-medium">
+                        Category
+                      </label>
+                      <Select value={category} onValueChange={setCategory}>
+                        <SelectTrigger id="petition-category">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="transportation">Transportation</SelectItem>
+                          <SelectItem value="environment">Environment</SelectItem>
+                          <SelectItem value="senior-welfare">Senior Welfare</SelectItem>
+                          <SelectItem value="safety">Safety</SelectItem>
+                          <SelectItem value="education">Education</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="deadline" className="text-sm font-medium">
@@ -429,6 +349,18 @@ export default function CommunityPage() {
                         placeholder="30"
                         value={deadline}
                         onChange={(e) => setDeadline(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="max-signatures" className="text-sm font-medium">
+                        Max Number of Signatures
+                      </label>
+                      <Input
+                        id="max-signatures"
+                        type="number"
+                        placeholder="Enter max signatures"
+                        value={target}
+                        onChange={(e) => setTarget(e.target.value)}
                       />
                     </div>
                   </TabsContent>

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge"
 import { FileUploader } from "@/components/file-uploader"
 import { ChatMessage } from "@/components/chat-message"
-import { Paperclip, Send, Mic, X, Scale, Globe } from "lucide-react"
+import { Paperclip, Send, X, Scale, Globe } from "lucide-react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import axios from 'axios'
@@ -346,9 +346,6 @@ export default function AppPage() {
                 />
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className="shrink-0">
-                    <Mic className="h-4 w-4" />
-                  </Button>
                   <Button size="icon" className="shrink-0" onClick={handleSendMessage}>
                     <Send className="h-4 w-4" />
                   </Button>

@@ -83,9 +83,11 @@ export default function ResourcesPage() {
                       <CardDescription>{resource.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button variant="outline" className="w-full gap-2">
-                        <Download className="h-4 w-4" /> Download PDF
-                      </Button>
+                      <a href="/DharmaSetuGuide.pdf" target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="w-full gap-2">
+                          <Download className="h-4 w-4" /> Download PDF
+                        </Button>
+                      </a>
                     </CardContent>
                   </Card>
                 ))}

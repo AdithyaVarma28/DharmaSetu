@@ -19,8 +19,7 @@ function CommunityHub() {
             }
 
             const newPetition = await response.json();
-
-            setPetitions((prevPetitions) => [...prevPetitions, newPetition]);
+            setPetitions((prevPetitions) => [...prevPetitions, { ...newPetition, status: 'active' }]);
         } catch (error) {
             console.error('Error creating petition:', error.message);
             alert(`Error: ${error.message}`);
@@ -31,38 +30,45 @@ function CommunityHub() {
         event.preventDefault();
 
         const petitionDetails = {
-            full_name: event.target.full_name.value,
-            parent_info: event.target.parent_info.value,
-            state: event.target.state.value,
-            issue: event.target.issue.value,
             title: event.target.title.value,
+            issue: event.target.issue.value,
             category: event.target.category.value,
             target: parseInt(event.target.target.value, 10),
-            deadline: event.target.deadline.value,
+            deadline: parseInt(event.target.deadline.value, 10),
         };
 
         createPetition(petitionDetails);
+    }
+
+    function updatePetitionStatus() {
+        setPetitions((prevPetitions) =>
+            prevPetitions.map((petition) =>
+                petition.signatures >= petition.target
+                    ? { ...petition, status: 'completed' }
+                    : petition
+            )
+        );
     }
 
     return (
         <div>
             <h1>Community Hub</h1>
             <form onSubmit={handleSubmit}>
-                <input name="full_name" placeholder="Full Name" required />
-                <input name="parent_info" placeholder="Parent Info" required />
-                <input name="state" placeholder="State" required />
-                <input name="issue" placeholder="Issue" required />
-                <input name="title" placeholder="Title" required />
+                <input name="title" placeholder="Petition Title" required />
+                <textarea name="issue" placeholder="Issue Description" required />
                 <input name="category" placeholder="Category" required />
-                <input name="target" type="number" placeholder="Target" required />
-                <input name="deadline" type="date" placeholder="Deadline" required />
+                <input name="target" type="number" placeholder="Target Signatures" required />
+                <input name="deadline" type="number" placeholder="Deadline (Days)" required />
                 <button type="submit">Create Petition</button>
             </form>
             <ul>
                 {petitions.map((petition, index) => (
-                    <li key={index}>{petition.title}</li>
+                    <li key={index}>
+                        {petition.title} - {petition.status}
+                    </li>
                 ))}
             </ul>
+            <button onClick={updatePetitionStatus}>Update Petition Status</button>
         </div>
     );
 }
