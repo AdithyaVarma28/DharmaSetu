@@ -44,7 +44,7 @@ export function ChatMessage({ message, isUser }: ChatMessageProps) {
 
       {isUser && (
         <Avatar className="h-8 w-8">
-          <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+          <AvatarImage src="/user.svg?height=32&width=32" alt="User" />
           <AvatarFallback>
             <User className="h-4 w-4" />
           </AvatarFallback>

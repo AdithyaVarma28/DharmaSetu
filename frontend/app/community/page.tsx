@@ -179,17 +179,6 @@ export default function CommunityPage() {
             <span>DharmaSetu</span>
           </Link>
           <MainNav className="mx-6" />
-          <div className="ml-auto flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-              <AvatarFallback>
-                <User className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-          </div>
         </div>
       </header>
 
