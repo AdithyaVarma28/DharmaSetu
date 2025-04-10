@@ -26,8 +26,10 @@ export function ChatMessage({ message, isUser }: ChatMessageProps) {
 
       <div className={`flex flex-col max-w-[80%] ${isUser ? "items-end" : "items-start"}`}>
         <div className={`rounded-lg p-4 ${isUser ? "bg-primary text-primary-foreground" : "bg-gray-100"}`}>
-          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-
+          <div 
+            className="text-sm whitespace-pre-line" 
+            dangerouslySetInnerHTML={{ __html: message.content }}
+          />
           {message.attachments && message.attachments.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
               {message.attachments.map((file, index) => (

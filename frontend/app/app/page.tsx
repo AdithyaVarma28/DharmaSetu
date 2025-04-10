@@ -13,6 +13,7 @@ import { Paperclip, Send, Mic, X, Scale, Globe } from "lucide-react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import axios from 'axios'
+import { formatMessage } from '@/utils/formatMessage'
 
 // Mock data for chat messages
 const INITIAL_MESSAGES = [
@@ -238,7 +239,13 @@ export default function AppPage() {
           <div className="flex-1 overflow-auto p-4">
             <div className="max-w-3xl mx-auto space-y-4">
               {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} isUser={message.role === "user"} />
+                <div key={message.id} className={message.role === 'user' ? 'text-right' : 'text-left'}>
+                  <div className={`inline-block p-4 rounded-lg ${
+                    message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  }`}>
+                    <div dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
+                  </div>
+                </div>
               ))}
 
               {isProcessing && (
@@ -282,7 +289,7 @@ export default function AppPage() {
                             fill="currentColor"
                             fillRule="evenodd"
                             clipRule="evenodd"
-                          ></path>
+                          />
                         </svg>
                       </Button>
                     </div>
@@ -301,7 +308,7 @@ export default function AppPage() {
           <div className="border-t p-4">
             <div className="max-w-3xl mx-auto">
               {attachments.length > 0 && (
-                <div className="hidden"> {/* Hide the attachment display */}
+                <div className="hidden">
                   {attachments.map((file, index) => (
                     <Badge key={index} variant="secondary" className="flex items-center gap-1">
                       <span className="truncate max-w-[200px]">{file}</span>
