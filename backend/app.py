@@ -7,7 +7,6 @@ from modules.summarize import summarize_legal_text
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
 from modules.ocr import analyze_document
-from modules.config import GROQ_KEY, GROQ_API_URL
 
 app = Flask(__name__)
 CORS(app) 
