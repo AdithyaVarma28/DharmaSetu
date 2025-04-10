@@ -114,17 +114,15 @@ export default function AppPage() {
   // Handle file upload
   const handleFileUpload = async (files: File[]) => {
     if (!files || files.length === 0) return;
-    
-    // Get the current module's mode
+
     const mode = activeModule === "language-simplifier" ? "ls" : "cr";
-    
-    const file = files[0]; // Take the first file
+    const file = files[0];
     const formData = new FormData();
     formData.append('file', file);
     formData.append('mode', mode);
-    
+
     setIsProcessing(true);
-    
+
     try {
       const response = await axios.post('http://127.0.0.1:5000/api/upload_file', formData, {
         headers: {
@@ -133,28 +131,20 @@ export default function AppPage() {
       });
 
       if (response.status === 200) {
-        // Add the file as an attachment and show it in the chat
-        setAttachments(prev => [...prev, file.name]);
-        
-        // Add the processed result to the chat
         const aiResponse = {
           id: messages.length + 1,
           role: 'system',
-          content: response.data.result
+          content: response.data.result,
         };
-        
+
         setMessages(prev => [...prev, aiResponse]);
-        
-        // Close the dialog after successful upload
-        setShowAttachDialog(false);
       } else {
         throw new Error(`Unexpected response: ${response.status}`);
       }
     } catch (error) {
       console.error('Error uploading file:', error);
-      
-      // Add a user-friendly error message
-      setMessages((prev) => [
+
+      setMessages(prev => [
         ...prev,
         {
           id: messages.length + 1,
@@ -164,6 +154,7 @@ export default function AppPage() {
       ]);
     } finally {
       setIsProcessing(false);
+      setShowAttachDialog(false); // Ensure the dialog is closed after upload
     }
   };
 
@@ -310,7 +301,7 @@ export default function AppPage() {
           <div className="border-t p-4">
             <div className="max-w-3xl mx-auto">
               {attachments.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2">
+                <div className="hidden"> {/* Hide the attachment display */}
                   {attachments.map((file, index) => (
                     <Badge key={index} variant="secondary" className="flex items-center gap-1">
                       <span className="truncate max-w-[200px]">{file}</span>
@@ -344,17 +335,6 @@ export default function AppPage() {
                           <h3 className="text-sm font-medium">Upload files</h3>
                           <p className="text-xs text-gray-500">Drag and drop to upload</p>
                           <FileUploader onUpload={handleFileUpload} />
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium">Attach URL</h3>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              placeholder="Enter a publicly accessible URL"
-                              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                            />
-                            <Button>Attach</Button>
-                          </div>
                         </div>
                       </div>
                     </DialogContent>
