@@ -217,22 +217,6 @@ export default function AppPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-gray-500" />
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-[150px] h-8">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="english">English</SelectItem>
-                <SelectItem value="hindi">Hindi</SelectItem>
-                <SelectItem value="tamil">Tamil</SelectItem>
-                <SelectItem value="telugu">Telugu</SelectItem>
-                <SelectItem value="bengali">Bengali</SelectItem>
-                <SelectItem value="marathi">Marathi</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </header>
 
         <main className="flex-1 flex flex-col">

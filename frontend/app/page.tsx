@@ -73,16 +73,14 @@ export default function Home() {
                 </div>
               </div>
               <div className="mx-auto lg:mx-0 relative">
-                <div className="relative h-[350px] w-[350px] sm:h-[400px] sm:w-[400px] lg:h-[500px] lg:w-[500px] bg-gray-100 rounded-lg shadow-lg overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Scale className="h-24 w-24 text-primary opacity-20" />
-                  </div>
+                <div className="relative h-[550px] w-[550px] sm:h-[500px] sm:w-[500px] lg:h-[600px] lg:w-[600px] bg-gray-100 rounded-lg shadow-lg overflow-hidden">
+                  <img
+                    src="/home-page.png"
+                    alt="Gavel"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-background/0 p-6">
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-xl">Legal Answer Assistant</h3>
-                      <p className="text-sm text-gray-500">
-                        Get instant answers to your legal questions in plain language
-                      </p>
                     </div>
                   </div>
                 </div>

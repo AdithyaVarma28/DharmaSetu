@@ -93,7 +93,7 @@ export default function ResourcesPage() {
             </TabsContent>
 
             <TabsContent value="help">
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-1">
                 <Card>
                   <CardHeader>
                     <CardTitle>Frequently Asked Questions</CardTitle>
@@ -101,60 +101,32 @@ export default function ResourcesPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {[
-                      "How do I translate content to my regional language?",
-                      "Can I download my case predictions for offline use?",
-                      "How secure is my document data when using the platform?",
-                      "How can I create a community petition?",
-                      "What legal jurisdictions does DharmaSetu cover?",
-                    ].map((question, index) => (
-                      <div key={index} className="border-b pb-2">
-                        <Link href="#" className="flex items-center justify-between hover:text-primary">
-                          <span>{question}</span>
-                          <HelpCircle className="h-4 w-4" />
-                        </Link>
+                      {
+                        question: "How do I translate content to my regional language?",
+                        answer: "You can use the built-in translation feature available in the settings menu to translate content into supported regional languages.",
+                      },
+                      {
+                        question: "Can I download my case predictions for offline use?",
+                        answer: "Yes, you can download case predictions as PDF files by clicking the 'Download' button on the results page.",
+                      },
+                      {
+                        question: "How secure is my document data when using the platform?",
+                        answer: "Your data is encrypted and stored securely. We follow industry-standard security practices to ensure your information is safe.",
+                      },
+                      {
+                        question: "How can I create a community petition?",
+                        answer: "Navigate to the 'Community Hub' section and click on 'Create Petition' to start a new petition.",
+                      },
+                      {
+                        question: "What legal jurisdictions does DharmaSetu cover?",
+                        answer: "DharmaSetu currently supports legal jurisdictions in India, including state and central laws.",
+                      },
+                    ].map((faq, index) => (
+                      <div key={index} className="border-b pb-4">
+                        <h3 className="font-medium text-lg">{faq.question}</h3>
+                        <p className="text-sm text-gray-600 mt-2">{faq.answer}</p>
                       </div>
                     ))}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Contact Support</CardTitle>
-                    <CardDescription>Get help from our support team</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium">
-                        Name
-                      </label>
-                      <input
-                        id="name"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        placeholder="Your name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium">
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        placeholder="Your email"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="message" className="text-sm font-medium">
-                        Message
-                      </label>
-                      <textarea
-                        id="message"
-                        className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        placeholder="Describe your issue"
-                      />
-                    </div>
-                    <Button className="w-full">Submit Request</Button>
                   </CardContent>
                 </Card>
               </div>
