@@ -20,7 +20,7 @@ const INITIAL_MESSAGES = [
   {
     id: 1,
     role: "system",
-    content: "Good Evening. How can I help you today?",
+    content: "Good Morning. How can I help you today?",
   },
 ]
 
