@@ -39,7 +39,8 @@ const MOCK_PETITIONS = [
     createdBy: "Citizens for Better Transport",
     createdAt: "2 weeks ago",
     status: "Active",
-    signed: false, // Added signed property
+    signed: false,
+    petition_text: "Full text of the petition for better public transport.", // Added petition_text
   },
   {
     id: 2,
@@ -53,6 +54,7 @@ const MOCK_PETITIONS = [
     createdAt: "3 weeks ago",
     status: "Active",
     signed: false,
+    // Removed petition_text for mock petitions
   },
   {
     id: 3,
@@ -66,6 +68,7 @@ const MOCK_PETITIONS = [
     createdAt: "1 week ago",
     status: "Active",
     signed: false,
+    // Removed petition_text for mock petitions
   },
   {
     id: 4,
@@ -79,6 +82,7 @@ const MOCK_PETITIONS = [
     createdAt: "2 weeks ago",
     status: "Active",
     signed: false,
+    // Removed petition_text for mock petitions
   },
   {
     id: 5,
@@ -92,6 +96,7 @@ const MOCK_PETITIONS = [
     createdAt: "1 week ago",
     status: "Active",
     signed: false,
+    // Removed petition_text for mock petitions
   },
 ]
 
@@ -102,6 +107,23 @@ export default function CommunityPage() {
   const [createType, setCreateType] = useState<"issue" | "petition">("petition")
   const [petitions, setPetitions] = useState(MOCK_PETITIONS)
   const [selectedCategory, setSelectedCategory] = useState("")
+  const [showFullTextDialog, setShowFullTextDialog] = useState(false)
+  interface Petition {
+    id: number;
+    title: string;
+    description: string;
+    category: string;
+    target: number;
+    signatures: number;
+    deadline: string;
+    createdBy: string;
+    createdAt: string;
+    status: string;
+    signed: boolean;
+    petition_text?: string; // Added petition_text as optional
+  }
+  
+  const [selectedPetition, setSelectedPetition] = useState<Petition | null>(null);
 
   // Form states
   const [fullName, setFullName] = useState("")
@@ -113,9 +135,23 @@ export default function CommunityPage() {
   const [target, setTarget] = useState("1000")
   const [deadline, setDeadline] = useState("30")
 
+  // Map for converting select values to display categories
+  const categoryMapping: { [key: string]: string } = {
+    "transportation": "Transportation",
+    "environment": "Environment",
+    "senior-welfare": "Senior Welfare",
+    "safety": "Safety",
+    "education": "Education"
+  };
+
   const handleCreateNew = (type: "issue" | "petition") => {
     setCreateType(type)
     setShowCreateDialog(true)
+  }
+
+  const handleShowFullText = (petition: any) => {
+    setSelectedPetition(petition)
+    setShowFullTextDialog(true)
   }
 
   const handleSignPetition = (id: number) => {
@@ -135,29 +171,57 @@ export default function CommunityPage() {
     }
   }
 
-  const handleSubmit = () => {
-    const newPetition = {
-      id: petitions.length + 1, // Generate a new ID
-      title,
-      description,
-      category,
-      target: parseInt(target),
-      signatures: 0, // Start with 0 signatures
-      deadline: `${deadline} days left`,
-      createdBy: "You", // Placeholder for the creator
-      createdAt: "Just now", // Placeholder for creation time
-      status: "Active",
-      signed: false,
-    };
+  const handleSubmit = async () => {
+    // Convert the form category value to its proper display format
+    const displayCategory = categoryMapping[category] || category;
 
-    setPetitions((prev) => [newPetition, ...prev]); // Add the new petition to the list
-    setShowCreateDialog(false); // Close the dialog
-    setTitle(""); // Reset form fields
-    setDescription("");
-    setCategory("");
-    setTarget("1000");
-    setDeadline("30");
-  };
+    const newPetition = {
+      full_name: fullName,
+      parent_info: parentInfo,
+      state,
+      issue: description,
+      title,
+      category: displayCategory, // Use the properly formatted category
+      target: parseInt(target),
+      deadline: `${deadline} days left`,
+    }
+
+    try {
+      // Send petition data to backend API
+      const response = await fetch('http://127.0.0.1:5000/api/petitions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPetition),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create petition');
+      }
+
+      const createdPetition = await response.json();
+      console.log("Petition created successfully:", createdPetition);
+
+      // Add the new petition to the list and close dialog
+      setPetitions([...petitions, createdPetition]);
+      setShowCreateDialog(false);
+
+      // Reset form fields
+      setFullName("");
+      setParentInfo("");
+      setState("");
+      setDescription("");
+      setTitle("");
+      setCategory("");
+      setTarget("1000");
+      setDeadline("30");
+    } catch (error) {
+      console.error("Error creating petition:", error);
+      alert("Failed to create petition. Please try again.");
+    }
+  }
 
   // Filter petitions based on the selected tab and search query
   const filteredPetitions = petitions
@@ -170,7 +234,8 @@ export default function CommunityPage() {
     })
     .filter((petition) => {
       if (sortOption === "recent") {
-        return petition.createdAt === "1 week ago"; // Match petitions with "1 week ago" in mock data
+        // Include both "Just now" and "1 week ago" petitions for the recent tab
+        return petition.createdAt === "Just now" || petition.createdAt === "1 week ago";
       }
       if (sortOption === "trending") {
         return petition.signatures / petition.target >= 0.5; // Example: Trending if 50% or more signatures achieved
@@ -180,6 +245,12 @@ export default function CommunityPage() {
     .sort((a, b) => {
       if (sortOption === "trending") {
         return b.signatures / b.target - a.signatures / a.target; // Sort by percentage of signatures achieved
+      }
+      if (sortOption === "recent") {
+        // Prioritize "Just now" over "1 week ago"
+        if (a.createdAt === "Just now" && b.createdAt !== "Just now") return -1;
+        if (a.createdAt !== "Just now" && b.createdAt === "Just now") return 1;
+        return 0;
       }
       return 0;
     })
@@ -248,20 +319,20 @@ export default function CommunityPage() {
                     {petitions.length}
                   </Badge>
                 </div>
-                {["Transportation", "Environment", "Senior Welfare", "Safety", "Education"].map(
-                  (category) => (
+                {Object.values(categoryMapping).map(
+                  (categoryDisplay) => (
                     <div
-                      key={category}
+                      key={categoryDisplay}
                       className={`flex items-center justify-between cursor-pointer ${
-                        selectedCategory === category ? "text-primary font-semibold" : ""
+                        selectedCategory === categoryDisplay ? "text-primary font-semibold" : ""
                       }`}
-                      onClick={() => setSelectedCategory(category)}
+                      onClick={() => setSelectedCategory(categoryDisplay)}
                     >
-                      <span className="text-sm">{category}</span>
+                      <span className="text-sm">{categoryDisplay}</span>
                       <Badge variant="secondary" className="text-xs">
                         {
                           petitions.filter(
-                            (petition) => petition.category === category
+                            (petition) => petition.category === categoryDisplay
                           ).length
                         }
                       </Badge>
@@ -300,6 +371,39 @@ export default function CommunityPage() {
                 <Tabs defaultValue="petition">
                   <TabsContent value="petition" className="space-y-4 mt-4">
                     <div className="space-y-2">
+                      <label htmlFor="full-name" className="text-sm font-medium">
+                        Full Name
+                      </label>
+                      <Input
+                        id="full-name"
+                        placeholder="Enter your full name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="parent-info" className="text-sm font-medium">
+                        Parent/Guardian Information
+                      </label>
+                      <Input
+                        id="parent-info"
+                        placeholder="Enter parent/guardian information"
+                        value={parentInfo}
+                        onChange={(e) => setParentInfo(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="state" className="text-sm font-medium">
+                        State
+                      </label>
+                      <Input
+                        id="state"
+                        placeholder="Enter your state"
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
                       <label htmlFor="petition-title" className="text-sm font-medium">
                         Petition Title
                       </label>
@@ -322,22 +426,36 @@ export default function CommunityPage() {
                         onChange={(e) => setDescription(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label htmlFor="petition-category" className="text-sm font-medium">
-                        Category
-                      </label>
-                      <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger id="petition-category">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="transportation">Transportation</SelectItem>
-                          <SelectItem value="environment">Environment</SelectItem>
-                          <SelectItem value="senior-welfare">Senior Welfare</SelectItem>
-                          <SelectItem value="safety">Safety</SelectItem>
-                          <SelectItem value="education">Education</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label htmlFor="petition-category" className="text-sm font-medium">
+                          Category
+                        </label>
+                        <Select value={category} onValueChange={setCategory}>
+                          <SelectTrigger id="petition-category">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="transportation">Transportation</SelectItem>
+                            <SelectItem value="environment">Environment</SelectItem>
+                            <SelectItem value="senior-welfare">Senior Welfare</SelectItem>
+                            <SelectItem value="safety">Safety</SelectItem>
+                            <SelectItem value="education">Education</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="target" className="text-sm font-medium">
+                          Target Signatures
+                        </label>
+                        <Input
+                          id="target"
+                          type="number"
+                          placeholder="1000"
+                          value={target}
+                          onChange={(e) => setTarget(e.target.value)}
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="deadline" className="text-sm font-medium">
@@ -349,18 +467,6 @@ export default function CommunityPage() {
                         placeholder="30"
                         value={deadline}
                         onChange={(e) => setDeadline(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="max-signatures" className="text-sm font-medium">
-                        Max Number of Signatures
-                      </label>
-                      <Input
-                        id="max-signatures"
-                        type="number"
-                        placeholder="Enter max signatures"
-                        value={target}
-                        onChange={(e) => setTarget(e.target.value)}
                       />
                     </div>
                   </TabsContent>
@@ -394,6 +500,16 @@ export default function CommunityPage() {
                 </CardHeader>
                 <CardContent className="pb-2">
                   <p className="text-sm text-gray-600">{petition.description}</p>
+                  {/* Only show the button for newly created petitions with petition_text */}
+                  {petition.petition_text && typeof petition.id === 'number' && petition.id > MOCK_PETITIONS.length && (
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto text-sm text-primary mt-2"
+                      onClick={() => handleShowFullText(petition)}
+                    >
+                      Show Full Petition Text
+                    </Button>
+                  )}
                   <div className="mt-4">
                     <div className="flex justify-between text-sm mb-1">
                       <span>Progress</span>
@@ -442,6 +558,56 @@ export default function CommunityPage() {
           </div>
         </div>
       </div>
+
+      {/* Dialog for displaying full petition text */}
+      <Dialog open={showFullTextDialog} onOpenChange={setShowFullTextDialog}>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedPetition?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {selectedPetition && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium">Petition by:</h3>
+                  <p>{selectedPetition.createdBy}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Category:</h3>
+                  <Badge>{selectedPetition.category}</Badge>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Full Petition Text:</h3>
+                  <div className="bg-gray-50 p-4 rounded-md border mt-2">
+                    {selectedPetition.petition_text ? (
+                      <pre className="whitespace-pre-wrap font-sans text-sm">
+                        {selectedPetition.petition_text}
+                      </pre>
+                    ) : (
+                      <p className="text-gray-500 italic">No petition text available.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowFullTextDialog(false)}>
+              Close
+            </Button>
+            {selectedPetition && !selectedPetition.signed && (
+              <Button 
+                onClick={() => {
+                  handleSignPetition(selectedPetition.id);
+                  setShowFullTextDialog(false);
+                }}
+              >
+                Sign Petition
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

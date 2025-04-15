@@ -7,6 +7,8 @@ from modules.summarize import summarize_legal_text
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
 from modules.ocr import analyze_document
+from modules.petition import generate_petition
+from modules.config import GROQ_KEY, GROQ_API_URL
 
 app = Flask(__name__)
 CORS(app) 
@@ -117,6 +119,27 @@ def api_upload_file():
             return jsonify({'error': f'Error processing file: {str(e)}'}), 500
     else:
         return jsonify({'error': 'File upload failed'}), 400
+
+@app.route('/api/petitions', methods=['POST'])
+def create_petition():
+    try:
+        data = request.json
+        print("Incoming petition details:", data)  # Log the incoming petition details
+
+        required_fields = ["full_name", "parent_info", "state", "issue"]
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Use the create_petition function from petition.py
+        from modules.petition import create_petition as generate_petition_obj
+        created_petition = generate_petition_obj(data)
+        
+        # Log the formatted petition that will be sent to frontend
+        print("Formatted petition for frontend:", created_petition)
+
+        return jsonify(created_petition), 201
+    except Exception as e:
+        return jsonify({'error': f'Error creating petition: {str(e)}'}), 500
 
 @app.errorhandler(Exception)
 def handle_exception(e):
