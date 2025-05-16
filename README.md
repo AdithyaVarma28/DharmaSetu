@@ -79,5 +79,3 @@ We welcome contributions to DharmaSetu! Here's how you can help:
 
 - Follow the ESLint and Prettier configurations for the frontend.
 - Use PEP 8 guidelines for Python code in the backend.
-
----
