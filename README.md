@@ -79,13 +79,3 @@ We welcome contributions to DharmaSetu! Here's how you can help:
 
 - Follow the ESLint and Prettier configurations for the frontend.
 - Use PEP 8 guidelines for Python code in the backend.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For questions or support, please contact us at [support@dharmasetu.org](mailto:support@dharmasetu.org).
-
----
